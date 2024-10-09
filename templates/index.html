@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Gestiona Tu inventario</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Agregar Entrada</h5>
+                        <p class="card-text">Registra una nueva entrada de productos en el inventario.</p>
+                        <a href="/add_entrada" class="btn btn-primary">Agregar Entrada</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Agregar Producto</h5>
+                        <p class="card-text">Agrega un nuevo producto al inventario.</p>
+                        <a href="/add_product" class="btn btn-success">Agregar Producto</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Registrar Salida</h5>
+                        <p class="card-text">Registra la salida de productos del inventario.</p>
+                        <a href="/add_salida" class="btn btn-warning">Registrar Salida</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Ver Entradas</h5>
+                        <p class="card-text">Consulta todas las entradas registradas en el inventario.</p>
+                        <a href="/entradas" class="btn btn-info">Ver Entradas</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Ver Salidas</h5>
+                        <p class="card-text">Consulta todas las salidas registradas en el inventario.</p>
+                        <a href="/salidas" class="btn btn-secondary">Ver Salidas</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Stock por Ubicación</h5>
+                        <p class="card-text">Consulta el stock actual por ubicación.</p>
+                        <a href="/stock_por_ubicacion" class="btn btn-info">Ver Stock por Ubicación</a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

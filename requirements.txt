@@ -1,0 +1,10 @@
+Flask
+mysql-connector-python
+pandas
+<<<<<<< HEAD
+openpyxl
+gunicorn
+=======
+gunicorn
+
+>>>>>>> 3be3d784196b0a8b29386e7da0a48ba0f81232c8

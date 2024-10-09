@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Salida</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Registrar Nueva Salida</h1>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form action="/add_salida" method="POST">
+                    <div class="mb-3">
+                        <label for="producto_id" class="form-label">Producto:</label>
+                        <select name="producto_id" class="form-select" required>
+                            <option value="" disabled selected>Seleccione un producto</option>
+                            {% for producto in productos %}
+                                <option value="{{ producto.id_producto }}">{{ producto.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cantidad" class="form-label">Cantidad:</label>
+                        <input type="number" name="cantidad" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Registrar Salida</button>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">Menú Principal</a>
+        </div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert alert-info mt-4">
+                    {% for message in messages %}
+                        <div>{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

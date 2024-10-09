@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock por Ubicación</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Stock Actual por Ubicación</h1>
+
+        <!-- Formulario de filtro por ubicación -->
+        <form method="GET" action="/stock_por_ubicacion" class="mb-4">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <select name="ubicacion" class="form-select" onchange="this.form.submit()">
+                        <option value="">Todas las Ubicaciones</option>
+                        {% for ubic in ubicaciones %}
+                            <option value="{{ ubic }}" {% if ubic == filtro_ubicacion %}selected{% endif %}>{{ ubic }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <!-- Tabla de stock por ubicación -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Producto</th>
+                            <th>Ubicación</th>
+                            <th>Stock Disponible</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in stock_data %}
+                        <tr>
+                            <td>{{ item.producto }}</td>
+                            <td>{{ item.ubicacion }}</td>
+                            <td>{{ item.stock }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">Menú Principal</a>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
