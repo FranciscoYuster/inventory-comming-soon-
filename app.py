@@ -1,18 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 import mysql.connector
 import pandas as pd
-import os 
+import os
 from dotenv import load_dotenv
 
 app = Flask(__name__)
 app.secret_key = "secret_key"  # Clave secreta para manejar las sesiones y los mensajes flash
+
+load_dotenv()  # Cargar variables de entorno
 
 db_config = {
     'host': os.getenv("HOST"),
     'user': os.getenv("USER"),
     'password': os.getenv("PASSWORD"),
     'database': os.getenv("DATABASE"),
-    'port': int(os.getenv("PORT"))  # Asegúrate de convertir el puerto a entero
+    'port': 3306  # Asegúrate de convertir el puerto a entero
 }
 
 # Crear una función de conexión
@@ -43,12 +45,13 @@ def add_entry():
             flash('Cantidad inválida.')
             return redirect(url_for('add_entrada'))
 
-        # Inserción en la base de datos con el id_producto y ubicación
+        db = get_db_connection()  # Obtén la conexión
         cursor = db.cursor()
         cursor.execute("INSERT INTO entradas (id_producto, cantidad, ubicacion) VALUES (%s, %s, %s)",
                        (id_producto, cantidad, ubicacion))
         db.commit()
         cursor.close()
+        db.close()  # Cierra la conexión
         flash('Entrada añadida correctamente!')
         return redirect(url_for('add_entrada'))
 
@@ -73,12 +76,13 @@ def add_product():
             flash('Precio inválido.')
             return redirect(url_for('add_product'))
 
-        # Inserción del nuevo producto en la base de datos
+        db = get_db_connection()  # Obtén la conexión
         cursor = db.cursor()
         cursor.execute("INSERT INTO productos (nombre, descripcion, precio, categoria) VALUES (%s, %s, %s, %s)",
                        (nombre, descripcion, precio, categoria))
         db.commit()
         cursor.close()
+        db.close()  # Cierra la conexión
         flash('Producto agregado correctamente!')
         return redirect(url_for('add_product'))
     return render_template('add_product.html')
@@ -86,6 +90,7 @@ def add_product():
 # Ruta para mostrar todas las entradas
 @app.route('/entradas')
 def show_entries():
+    db = get_db_connection()  # Obtén la conexión
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
         SELECT e.id_entrada, p.nombre AS producto, e.cantidad, e.ubicacion, e.fecha_entrada 
@@ -94,6 +99,7 @@ def show_entries():
     """)
     entradas = cursor.fetchall()
     cursor.close()
+    db.close()  # Cierra la conexión
     return render_template('entradas.html', entradas=entradas)
 
 # Ruta para registrar salidas de productos
@@ -114,7 +120,7 @@ def add_salida():
             flash('Cantidad inválida.')
             return redirect(url_for('add_salida'))
 
-        # Calcular el stock actual
+        db = get_db_connection()  # Obtén la conexión
         cursor = db.cursor()
         cursor.execute("SELECT COALESCE(SUM(cantidad), 0) FROM entradas WHERE id_producto = %s", (id_producto,))
         total_entradas = cursor.fetchone()[0]
@@ -126,25 +132,29 @@ def add_salida():
 
         if cantidad > stock_actual:
             flash(f'La cantidad solicitada supera el stock disponible ({stock_actual} unidades).')
+            cursor.close()
+            db.close()  # Cierra la conexión
             return redirect(url_for('add_salida'))
 
-        # Registrar la salida
         cursor.execute("INSERT INTO salidas (id_producto, cantidad) VALUES (%s, %s)", (id_producto, cantidad))
         db.commit()
         cursor.close()
+        db.close()  # Cierra la conexión
         flash('Salida registrada correctamente!')
         return redirect(url_for('add_salida'))
 
-    # Obtener lista de productos para el formulario
+    db = get_db_connection()  # Obtén la conexión
     cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT id_producto, nombre FROM productos")
     productos = cursor.fetchall()
     cursor.close()
+    db.close()  # Cierra la conexión
     return render_template('add_salida.html', productos=productos)
 
 # Ruta para mostrar todas las salidas
 @app.route('/salidas')
 def show_salidas():
+    db = get_db_connection()  # Obtén la conexión
     cursor = db.cursor(dictionary=True)
     cursor.execute("""
         SELECT s.id_salida, p.nombre AS producto, s.cantidad, s.fecha_salida 
@@ -153,27 +163,29 @@ def show_salidas():
     """)
     salidas = cursor.fetchall()
     cursor.close()
+    db.close()  # Cierra la conexión
     return render_template('salidas.html', salidas=salidas)
 
 # Nueva ruta para agregar entradas de productos
 @app.route('/add_entrada')
 def add_entrada():
+    db = get_db_connection()  # Obtén la conexión
     cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT id_producto, nombre FROM productos")
     productos = cursor.fetchall()
     cursor.close()
+    db.close()  # Cierra la conexión
     return render_template('add_entrada.html', productos=productos)
 
 @app.route('/stock_por_ubicacion')
 def stock_por_ubicacion():
     filtro_ubicacion = request.args.get('ubicacion')  # Obtener el valor del filtro
+    db = get_db_connection()  # Obtén la conexión
     cursor = db.cursor(dictionary=True)
     
-    # Consulta para obtener las ubicaciones distintas para el filtro
     cursor.execute("SELECT DISTINCT ubicacion FROM entradas")
     ubicaciones = [row['ubicacion'] for row in cursor.fetchall()]
     
-    # Consulta para calcular el stock total, aplicando el filtro si existe
     query = """
         SELECT p.nombre AS producto, e.ubicacion, 
                (COALESCE(SUM(e.cantidad), 0) - COALESCE((SELECT COALESCE(SUM(s.cantidad), 0) 
@@ -183,7 +195,6 @@ def stock_por_ubicacion():
         INNER JOIN productos p ON e.id_producto = p.id_producto
     """
     
-    # Agregar condición de filtro de ubicación si se selecciona una
     if filtro_ubicacion:
         query += " WHERE e.ubicacion = %s GROUP BY e.id_producto, e.ubicacion HAVING stock > 0"
         cursor.execute(query, (filtro_ubicacion,))
@@ -193,9 +204,10 @@ def stock_por_ubicacion():
     
     stock_data = cursor.fetchall()
     cursor.close()
+    db.close()  # Cierra la conexión
     
-    # Renderizar la plantilla con datos de stock y ubicaciones para el filtro
     return render_template('stock_por_ubicacion.html', stock_data=stock_data, ubicaciones=ubicaciones, filtro_ubicacion=filtro_ubicacion)
+
 @app.route('/descargar_plantilla')
 def descargar_plantilla():
     return send_file('templates/plantilla_productos.xlsx', as_attachment=True)
@@ -209,16 +221,13 @@ def upload_excel():
     file = request.files['excel_file']
     
     try:
-        # Leer el archivo Excel
         data = pd.read_excel(file)
-        
-        # Validar columnas requeridas
         required_columns = {'Nombre', 'Descripción', 'Precio', 'Categoría'}
         if not required_columns.issubset(data.columns):
             flash('La plantilla Excel no tiene las columnas requeridas.')
             return redirect(url_for('add_product'))
         
-        # Insertar productos en la base de datos
+        db = get_db_connection()  # Obtén la conexión
         cursor = db.cursor()
         for _, row in data.iterrows():
             cursor.execute(
@@ -227,6 +236,7 @@ def upload_excel():
             )
         db.commit()
         cursor.close()
+        db.close()  # Cierra la conexión
         
         flash('Productos cargados exitosamente desde Excel.')
     except Exception as e:
@@ -234,11 +244,10 @@ def upload_excel():
     
     return redirect(url_for('add_product'))
 
+app.run(host='127.0.0.1', port=5000, debug=True)
+
+
 # Ejecución de la aplicación en modo debug
 if __name__ == '__main__':
-    app.run(debug=True)
-    
-
-if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)    
+    app.run(host="0.0.0.0", port=port, debug=True)
